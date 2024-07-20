@@ -11,8 +11,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: job1 구현
-        run: echo "job1의 내용을 구현해주세요"
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: assignment-6 build
+        run: npm run build
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: build fail
+          path: packages/assignment-6
 
   lint:
     runs-on: ubuntu-latest
