@@ -24,11 +24,17 @@ jobs:
         run: |
           cd packages/assignment-6
           npm run build
-      - uses: actions/upload-artifact@v2
+      - uses: actions/github-script@v6
         if: failure()
         with:
           name: build fail
-          path: packages/assignment-6
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'build failed.'
+            })
 
   lint:
     runs-on: ubuntu-latest
