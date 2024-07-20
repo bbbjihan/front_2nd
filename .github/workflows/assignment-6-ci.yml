@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - opened
+      - synchronize
     paths:
       - 'packages/assignment-6/**'
 
@@ -20,7 +21,9 @@ jobs:
           node-version: 20
           cache: 'pnpm'
       - name: assignment-6 build
-        run: npm run build
+        run: |
+          cd packages/assignment-6
+          npm run build
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
