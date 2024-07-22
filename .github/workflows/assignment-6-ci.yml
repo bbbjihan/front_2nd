@@ -6,7 +6,7 @@ on:
       - opened
       - synchronize
     paths:
-      - 'packages/assignment-6/**'
+      - "packages/assignment-6/**"
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: "pnpm"
       - name: assignment-6 build
         run: |
           cd packages/assignment-6
@@ -39,8 +39,31 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: job2 구현
-        run: echo "job2의 내용을 구현해주세요"
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+      - name: assignment-6 lint
+        run: |
+          cd packages/assignment-6
+          npm run lint 2>&1 | tee lint.log
+      - name: Comment on PR if lint fails
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('packages/assignment-6/lint.log', 'utf8');
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `### Lint Failed\n\`\`\`\n${log}\n\`\`\``
+            });
 
   test:
     runs-on: ubuntu-latest
