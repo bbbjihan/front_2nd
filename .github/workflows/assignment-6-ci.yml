@@ -129,6 +129,8 @@ jobs:
           cache: "pnpm"
 
       - name: run lighthouse
+        env:
+          LHCI_GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         run: |
           pnpm install
           pnpm -F assignment-6 lhci
@@ -137,7 +139,7 @@ jobs:
         run: |
           pwd
           ls -la
-          cat lhci_reports/manifest.json
+          cat packages/assignment-6/lhci_reports/manifest.json
 
       - name: Comment or PR with lighthouse reports
         if: success()
@@ -145,7 +147,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const log = fs.readFileSync('lhci_reports/manifest.json', 'utf8');
+            const log = fs.readFileSync('packages/assignment-6/lhci_reports/manifest.json', 'utf8');
             console.log(log)
             github.rest.issues.createComment({
               issue_number: context.issue.number,
