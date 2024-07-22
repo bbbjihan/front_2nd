@@ -193,6 +193,7 @@ jobs:
 
   assign_reviewer:
     runs-on: ubuntu-latest
+    if: github.event.action == 'opened'
     steps:
       - name: assign random reviewer
         uses: actions/github-script@v6
