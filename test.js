@@ -3,20 +3,12 @@ const log = fs.readFileSync(
   "packages/assignment-6/lhci_reports/manifest.json",
   "utf8"
 );
-console.log(JSON.parse(log));
 const logs = JSON.parse(log);
-logs.forEach((log) => {
-  console.log(log.summary);
-});
-
-console.log(`실행횟수: ${logs.length}\n`);
-console.log("---\n");
 
 let chart = "";
 chart += "|Performance|Accessibility|Best-Practices|SEO|Average|\n";
 chart += "|---|---|---|---|---|";
-
-summary = [0, 0, 0, 0, 0];
+const summary = [0, 0, 0, 0, 0];
 
 logs.forEach((log) => {
   const perf = log.summary.performance * 100;
@@ -33,6 +25,15 @@ logs.forEach((log) => {
   summary[3] += seo;
   summary[4] += aver;
 });
+chart += `\n|${(summary[0] / logs.length).toFixed(2)}점|${(
+  summary[1] / logs.length
+).toFixed(2)}점|${(summary[2] / logs.length).toFixed(2)}점|${(
+  summary[3] / logs.length
+).toFixed(2)}점|${(summary[4] / logs.length).toFixed(2)}점`;
 
-console.log(chart);
-console.log(summary);
+github.rest.issues.createComment({
+  issue_number: context.issue.number,
+  owner: context.repo.owner,
+  repo: context.repo.repo,
+  body: `### ✅ Lighthouse C.I. dashboard \n---\n${chart}\n`,
+});
