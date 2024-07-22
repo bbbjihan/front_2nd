@@ -8,6 +8,9 @@ on:
     paths:
       - "packages/assignment-6/**"
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +24,7 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      - name: assignment-6 build
+      - name: run build
         run: |
           pnpm -F assignment-6 build
 
@@ -49,7 +52,7 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      - name: assignment-6 lint
+      - name: run lint
         run: |
           pnpm install
           pnpm -F assignment-6 lint 2>&1 | tee lint.log
@@ -81,7 +84,7 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      - name: assignment-6 test
+      - name: run test
         run: |
           pnpm install
           pnpm -F assignment-6 test:with_coverage 2>&1 | tee test.log
@@ -116,8 +119,34 @@ jobs:
   lighthouse:
     runs-on: ubuntu-latest
     steps:
-      - name: job4 구현
-        run: echo "job4의 내용을 구현해주세요"
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: run lighthouse
+        run: |
+          pnpm install
+          pnpm -F assignment-6 lhci
+
+      - name: Comment or PR with lighthouse reports
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('lhci_reports/manifest.json', 'utf8');
+            console.log(log)
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### ✅ Lighthouse C.I. dashboard \n\`\`\`\n${log}\n\`\`\``
+            })
 
   assign_reviewer:
     runs-on: ubuntu-latest
