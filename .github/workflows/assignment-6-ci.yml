@@ -51,11 +51,6 @@ jobs:
           pnpm install
           pnpm -F assignment-6 lint 2>&1 | tee lint.log
 
-      - name: read lint.log file
-        run: |
-          ls -la
-          cat lint.log
-
       - name: Comment on PR if lint fails
         if: failure()
         uses: actions/github-script@v6
