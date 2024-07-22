@@ -56,7 +56,7 @@ jobs:
         run: |
           pwd
           ls -la
-          cat packages/assignment-6/lint.log
+          cat lint.log
           echo ${{ env.exitcode }}
 
       - name: Comment on PR if lint fails
@@ -65,7 +65,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const log = fs.readFileSync('packages/assignment-6/lint.log', 'utf8');
+            const log = fs.readFileSync('lint.log', 'utf8');
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
