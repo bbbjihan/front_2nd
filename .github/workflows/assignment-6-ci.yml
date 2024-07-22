@@ -49,10 +49,10 @@ jobs:
       - name: assignment-6 lint
         run: |
           pnpm install
-          pnpm -F assignment-6 lint 2>&1 | tee lint.log
+          pnpm -F assignment-6 lint | tee lint.log
 
       - name: Comment on PR if lint fails
-        if: failure()
+        # if: failure()
         uses: actions/github-script@v6
         with:
           script: |
