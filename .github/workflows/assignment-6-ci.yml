@@ -45,12 +45,17 @@ jobs:
         with:
           node-version: 20
           cache: "pnpm"
+
       - name: assignment-6 lint
         run: |
           pnpm install
-          pnpm -F assignment lint 2>&1 | tee lint.log
-      - name: read ling.log file
-        run: ls -la && cat lint.log
+          pnpm -F assignment-6 lint 2>&1 | tee lint.log
+
+      - name: read lint.log file
+        run: |
+          ls -la
+          cat lint.log
+
       - name: Comment on PR if lint fails
         if: failure()
         uses: actions/github-script@v6
