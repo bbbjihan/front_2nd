@@ -57,6 +57,7 @@ jobs:
           pwd
           ls -la
           cat packages/assignment-6/lint.log
+          echo ${{ env.exitcode }}
 
       - name: Comment on PR if lint fails
         if: env.exitcode == '1'
