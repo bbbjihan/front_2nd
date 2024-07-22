@@ -50,17 +50,10 @@ jobs:
         run: |
           pnpm install
           pnpm -F assignment-6 lint 2>&1 | tee lint.log
-          echo "exitcode=${PIPESTATUS[0]}" >> $GITHUB_ENV
-
-      - name: check log file
-        run: |
-          pwd
-          ls -la
-          cat lint.log
-          echo ${{ env.exitcode }}
+          exit ${PIPESTATUS[0]}
 
       - name: Comment on PR if lint fails
-        if: env.exitcode == '1'
+        if: failure()
         uses: actions/github-script@v6
         with:
           script: |
