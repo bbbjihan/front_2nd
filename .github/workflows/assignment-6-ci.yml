@@ -79,7 +79,7 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      - name: assignment-6 lint
+      - name: assignment-6 test
         run: |
           pnpm install
           pnpm -F assignment-6 test:with_coverage
