@@ -1,15 +1,15 @@
-import { describe, expect, test } from 'vitest';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { useState } from "react";
+import { describe, expect, test } from 'vitest';
+import { AdminPage } from "../components/AdminPage.tsx";
 import { CartPage } from '../components/CartPage.tsx';
 import { Coupon, Product } from '../types.ts';
-import { AdminPage } from "../components/AdminPage.tsx";
-import { useState } from "react";
 
 const mockProducts: Product[] = [
   {
     id: 'p1',
     name: '상품1',
-    price: 10000,
+    price: 100002,
     stock: 20,
     discounts: [{ quantity: 10, rate: 0.1 }]
   },
