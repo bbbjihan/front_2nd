@@ -21,13 +21,11 @@ jobs:
           node-version: 20
           cache: "pnpm"
       - name: assignment-6 build
-        run: |
-          cd packages/assignment-6
-          npm run build
+        run: pnpm -F assignment-6 build
       - uses: actions/github-script@v6
         if: failure()
         with:
-          name: build fail
+          name: Comment on PR if build fails
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -49,8 +47,10 @@ jobs:
           cache: "pnpm"
       - name: assignment-6 lint
         run: |
-          cd packages/assignment-6
-          npm run lint 2>&1 | tee lint.log
+          pnpm install
+          pnpm -F assignment lint 2>&1 | tee lint.log
+      - name: read ling.log file
+        run: ls -la && cat lint.log
       - name: Comment on PR if lint fails
         if: failure()
         uses: actions/github-script@v6
