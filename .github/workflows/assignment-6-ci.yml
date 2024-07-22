@@ -20,19 +20,21 @@ jobs:
         with:
           node-version: 20
           cache: "pnpm"
+
       - name: assignment-6 build
         run: |
           pnpm -F assignment-6 build
-      - uses: actions/github-script@v6
+
+      - name: Comment on PR if build fails
         if: failure()
+        uses: actions/github-script@v6
         with:
-          name: Comment on PR if build fails
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: "### Build Failed"
+              body: "### ❌ Build Failed"
             })
 
   lint:
@@ -64,7 +66,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `### Lint Failed\n\`\`\`\n${log}\n\`\`\``
+              body: `### ❌ Lint Failed\n\`\`\`\n${log}\n\`\`\``
             });
 
   test:
@@ -82,7 +84,34 @@ jobs:
       - name: assignment-6 test
         run: |
           pnpm install
-          pnpm -F assignment-6 test:with_coverage
+          pnpm -F assignment-6 test:with_coverage 2>&1 | tee test.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Comment on PR if test fail
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "### ❌ test fail"
+            })
+
+      - name: Comment on PR if test passed
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('test.log', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### ✅ test success\n\`\`\`\n${log}\n\`\`\``
+            })
 
   lighthouse:
     runs-on: ubuntu-latest
