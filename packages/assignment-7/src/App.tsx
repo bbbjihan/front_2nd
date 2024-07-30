@@ -41,6 +41,10 @@ import {
 } from "@chakra-ui/react";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Event, RepeatType } from "./types";
+import formatMonth from "./utils/formatMonth";
+import formatWeek from "./utils/formatWeek";
+import getDaysInMonth from "./utils/getDaysInMonth";
+import getWeekDates from "./utils/getWeekDates";
 
 const categories = ["업무", "개인", "가족", "기타"];
 
@@ -116,6 +120,9 @@ function App() {
 
   const toast = useToast();
 
+  /**
+   * 서버에서 일정 정보 가져오기
+   */
   const fetchEvents = async () => {
     try {
       const response = await fetch("/api/events");
@@ -135,6 +142,9 @@ function App() {
     }
   };
 
+  /**
+   * 일정 추가 혹은 수정
+   */
   const addOrUpdateEvent = async () => {
     if (!title || !date || !startTime || !endTime) {
       toast({
@@ -183,6 +193,9 @@ function App() {
     }
   };
 
+  /**
+   * 일정 생성 및 수정 기능 중 저장하기 눌렀을 때
+   */
   const saveEvent = async (eventData: Event) => {
     try {
       let response;
@@ -230,6 +243,9 @@ function App() {
     }
   };
 
+  /**
+   * 일정 삭제 눌렀을 때
+   */
   const deleteEvent = async (id: number) => {
     try {
       const response = await fetch(`/api/events/${id}`, {
@@ -258,6 +274,9 @@ function App() {
     }
   };
 
+  /**
+   * 이벤트 알림 토스트 노출
+   */
   const checkUpcomingEvents = async () => {
     const now = new Date();
     const upcomingEvents = events.filter((event) => {
@@ -286,6 +305,9 @@ function App() {
     }
   };
 
+  /**
+   * 시작시간, 종료시간이 관계적으로 성립하는지 확인
+   */
   const validateTime = (start: string, end: string) => {
     if (!start || !end) return;
 
@@ -301,24 +323,35 @@ function App() {
     }
   };
 
+  /**
+   * 시작시간 변경
+   */
   const handleStartTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newStartTime = e.target.value;
+    console.log(newStartTime);
     setStartTime(newStartTime);
     validateTime(newStartTime, endTime);
   };
 
+  /**
+   * 종료시간 변경
+   */
   const handleEndTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newEndTime = e.target.value;
     setEndTime(newEndTime);
     validateTime(startTime, newEndTime);
   };
 
-  // 날짜 문자열을 Date 객체로 변환하는 함수
+  /**
+   * 날짜 문자열을 Date 객체로 변환하는 함수
+   */
   const parseDateTime = (date: string, time: string): Date => {
     return new Date(`${date}T${time}`);
   };
 
-  // 두 일정이 겹치는지 확인하는 함수
+  /**
+   * 두 일정이 겹치는지 확인하는 함수
+   */
   const isOverlapping = (event1: Event, event2: Event): boolean => {
     const start1 = parseDateTime(event1.date, event1.startTime);
     const end1 = parseDateTime(event1.date, event1.endTime);
@@ -328,13 +361,18 @@ function App() {
     return start1 < end2 && start2 < end1;
   };
 
-  // 겹치는 일정을 찾는 함수
+  /**
+   * 겹치는 일정을 찾는 함수
+   */
   const findOverlappingEvents = (newEvent: Event): Event[] => {
     return events.filter(
       (event) => event.id !== newEvent.id && isOverlapping(event, newEvent)
     );
   };
 
+  /**
+   * 입력 초기화
+   */
   const resetForm = () => {
     setTitle("");
     setDate("");
@@ -350,6 +388,9 @@ function App() {
     setRepeatEndDate("");
   };
 
+  /**
+   * 특정 일정 수정하기
+   */
   const editEvent = (event: Event) => {
     setEditingEvent(event);
     setTitle(event.title);
@@ -366,23 +407,9 @@ function App() {
     setNotificationTime(event.notificationTime);
   };
 
-  const getDaysInMonth = (year: number, month: number) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-
-  const getWeekDates = (date: Date) => {
-    const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(date.setDate(diff));
-    const weekDates = [];
-    for (let i = 0; i < 7; i++) {
-      const nextDate = new Date(monday);
-      nextDate.setDate(monday.getDate() + i);
-      weekDates.push(nextDate);
-    }
-    return weekDates;
-  };
-
+  /**
+   * 달력 전 후 이동
+   */
   const navigate = (direction: "prev" | "next") => {
     setCurrentDate((prevDate) => {
       const newDate = new Date(prevDate);
@@ -395,6 +422,9 @@ function App() {
     });
   };
 
+  /**
+   * 일정 검색하기
+   */
   const searchEvents = (term: string) => {
     if (!term.trim()) return events;
 
@@ -422,19 +452,6 @@ function App() {
       return true;
     });
   })();
-
-  const formatWeek = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const weekNumber = Math.ceil(date.getDate() / 7);
-    return `${year}년 ${month}월 ${weekNumber}주`;
-  };
-
-  const formatMonth = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    return `${year}년 ${month}월`;
-  };
 
   const renderWeekView = () => {
     const weekDates = getWeekDates(currentDate);
