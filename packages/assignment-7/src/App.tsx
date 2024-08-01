@@ -328,7 +328,6 @@ function App() {
    */
   const handleStartTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newStartTime = e.target.value;
-    console.log(newStartTime);
     setStartTime(newStartTime);
     validateTime(newStartTime, endTime);
   };
