@@ -1,4 +1,4 @@
-import { getAlarmBoundary } from "@/__tests__/testutils";
+import { getAlarmBoundary } from "@/__tests__/testUtils";
 import { Event } from "@/types";
 
 const events: Array<Event> = [
