@@ -27,6 +27,39 @@ export const typeEventForm = async (event: Omit<Event, "id">) => {
     screen.getByLabelText("알림 설정"),
     `${event.notificationTime}`
   );
+
+  const $repetitionCheckBox = screen.getByLabelText(
+    "반복 설정"
+  ) as HTMLInputElement;
+  const isRepetitionChecked = $repetitionCheckBox.checked;
+  if (event.repeat.type === "none") {
+    if (isRepetitionChecked) {
+      await userEvent.click($repetitionCheckBox);
+    }
+    return;
+  }
+
+  if (!isRepetitionChecked) {
+    await userEvent.click(screen.getByLabelText("반복 설정"));
+  }
+
+  await userEvent.selectOptions(
+    screen.getByLabelText("반복 유형"),
+    event.repeat.type
+  );
+  await userEvent.type(
+    screen.getByLabelText("반복 간격"),
+    event.repeat.interval.toString()
+  );
+
+  if (!event.repeat.endDate) {
+    return;
+  }
+
+  await userEvent.type(
+    screen.getByLabelText("반복 종료일"),
+    event.repeat.endDate
+  );
 };
 
 export const expectEventListHasEvent = async (event: Omit<Event, "id">) => {

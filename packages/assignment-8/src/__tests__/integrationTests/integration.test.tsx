@@ -53,7 +53,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "지한 생일파티",
         location: "지한이네",
         category: "개인",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 10,
       };
 
@@ -79,7 +79,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "지한 생일파티",
         location: "지한이네",
         category: "개인",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 10,
       };
 
@@ -401,7 +401,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "일정 충돌 테스트 설명",
         location: "피시방",
         category: "개인",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 10,
       };
 
@@ -413,7 +413,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "일정 충돌 테스트2 설명",
         location: "노래방",
         category: "업무",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 10,
       };
 
@@ -440,7 +440,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "일정 충돌 테스트 설명",
         location: "피시방",
         category: "개인",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 10,
       };
 
@@ -452,7 +452,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "일정 충돌 테스트2 설명",
         location: "노래방",
         category: "업무",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 60,
       };
 
