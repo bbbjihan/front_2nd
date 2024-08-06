@@ -70,7 +70,7 @@ const MonthView = ({
         </Thead>
         <Tbody>
           {weeks.map((week, weekIndex) => (
-            <Tr key={weekIndex}>
+            <Tr key={weekIndex} data-testid="monthview-week">
               {week.map((day, dayIndex) => {
                 const dateString = day
                   ? `${currentDate.getFullYear()}-${String(
@@ -86,6 +86,7 @@ const MonthView = ({
                     verticalAlign="top"
                     width="14.28%"
                     position="relative"
+                    data-testid="monthview-day"
                   >
                     {day && (
                       <>

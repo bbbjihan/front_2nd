@@ -46,6 +46,7 @@ const EventList = ({
             borderRadius="lg"
             p={3}
             width="100%"
+            data-testid="event-in-event-list"
           >
             <HStack justifyContent="space-between">
               <VStack align="start">
