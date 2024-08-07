@@ -24,6 +24,7 @@ afterEach(() => {
   server.close();
 });
 
+// 반복 종료일 default 설정, 반복 간격 말고 반복 횟수로 반복 일정 생성 기능 등
 describe("반복 일정 테스트", () => {
   describe("일정 생성 또는 수정 시 일정 반복 설정값들을 선택 및 입력할 수 있다.", () => {
     beforeEach(() => {
@@ -77,8 +78,6 @@ describe("반복 일정 테스트", () => {
       expect(document.body).not.toContainElement($monthRepetitionWeekSelector);
     });
   });
-
-  // 반복 종료일 default 설정, 반복 간격 말고 반복 횟수로 반복 일정 생성 기능 등
 
   describe("반복 일정 생성", () => {
     beforeEach(() => {
@@ -998,15 +997,492 @@ describe("반복 일정 테스트", () => {
       });
     });
 
-    describe("반복 일정 중 자식 일정을 수정 및 삭제할 경우 그 일정에만 반영할 것인지 전체 반복 일정에 반영할 것인지 선택할 수 있다.", () => {
-      describe("그 일정에만 반영한다고 선택할 경우 반복 일정 중 그 일정에만 수정 및 삭제가 반영된다.", () => {
-        test("그 일정에만 반영한다고 선택할 경우 반복 일정 중 그 일정에만 수정이 반영된다.", async () => {});
-        test("그 일정에만 반영한다고 선택할 경우 반복 일정 중 그 일정에만 삭제가 반영된다.", async () => {});
+    describe("반복 일정 중 자식 일정을 수정 및 삭제할 경우 선택한 일정에만 반영할 것인지 전체 반복 일정에 반영할 것인지 선택할 수 있다.", () => {
+      describe("반복 일정 중 자식 일정을 수정 및 삭제할 경우 전체 반영 여부를 묻는 UI가 노출된다.", () => {
+        test("반복 일정 중 자식 일정을 수정할 경우 전체 반영 여부를 묻는 UI가 노출된다.", async () => {
+          render(<Scheduler />);
+          const testEvent: Omit<Event, "id"> = {
+            title: "반복 event 생성 테스트",
+            date: "2024-07-01",
+            startTime: "12:00",
+            endTime: "12:30",
+            description: "daily scrum",
+            location: "회의실",
+            category: "개인",
+            repeat: { type: "daily", interval: 2 },
+            notificationTime: 10,
+          };
+
+          await typeEventForm(testEvent);
+          await userEvent.click(screen.getByTestId("event-submit-button"));
+          await expectEventListHasEvent(testEvent);
+
+          const $eventsInEventList = screen.getAllByTestId(
+            "event-in-event-list"
+          );
+
+          const repetitionDates = [
+            "2024-07-01",
+            "2024-07-03",
+            "2024-07-05",
+            "2024-07-07",
+            "2024-07-09",
+            "2024-07-11",
+            "2024-07-13",
+            "2024-07-15",
+            "2024-07-17",
+            "2024-07-19",
+            "2024-07-21",
+            "2024-07-23",
+            "2024-07-25",
+            "2024-07-27",
+            "2024-07-29",
+            "2024-07-31",
+          ];
+
+          let repetitionCount = 0;
+          for (const $event of $eventsInEventList) {
+            const isRepetition = repetitionDates.some((date) => {
+              return $event.innerHTML.includes(date);
+            });
+            if (isRepetition) {
+              repetitionCount++;
+              expect($event).toHaveTextContent("반복 event 생성 테스트");
+            }
+          }
+
+          expect(repetitionCount).toBe(repetitionDates.length);
+
+          const updateEvent: Omit<Event, "id"> = {
+            title: "반복 event 수정 테스트",
+            date: "2024-07-02",
+            startTime: "12:00",
+            endTime: "12:30",
+            description: "daily scrum",
+            location: "회의실",
+            category: "개인",
+            repeat: { type: "daily", interval: 2 },
+            notificationTime: 10,
+          };
+
+          const $targetEvent = $eventsInEventList.filter((event) =>
+            event.innerHTML.includes("반복 일정")
+          )[0];
+          const $EventEditButton = $targetEvent.children[1].children[0];
+
+          await userEvent.click($EventEditButton);
+
+          await clearEventForm();
+          await typeEventForm(updateEvent);
+
+          await userEvent.click(screen.getByTestId("event-submit-button"));
+
+          expect(document.body).toHaveTextContent(
+            "반복 일정에 대한 수정을 요청하였습니다."
+          );
+          expect(document.body).toHaveTextContent(
+            "해당 일정에만 수정사항을 반영하시겠습니까?"
+          );
+          expect(document.body).toHaveTextContent("전체 반영");
+          expect(document.body).toHaveTextContent("해당 일정에만 반영");
+        });
+
+        test("반복 일정 중 자식 일정을 삭제할 경우 전체 반영 여부를 묻는 UI가 노출된다.", async () => {
+          render(<Scheduler />);
+          const testEvent: Omit<Event, "id"> = {
+            title: "반복 event 생성 테스트",
+            date: "2024-07-01",
+            startTime: "12:00",
+            endTime: "12:30",
+            description: "daily scrum",
+            location: "회의실",
+            category: "개인",
+            repeat: { type: "daily", interval: 2 },
+            notificationTime: 10,
+          };
+
+          await typeEventForm(testEvent);
+          await userEvent.click(screen.getByTestId("event-submit-button"));
+          await expectEventListHasEvent(testEvent);
+
+          const $eventsInEventList = screen.getAllByTestId(
+            "event-in-event-list"
+          );
+
+          const repetitionDates = [
+            "2024-07-01",
+            "2024-07-03",
+            "2024-07-05",
+            "2024-07-07",
+            "2024-07-09",
+            "2024-07-11",
+            "2024-07-13",
+            "2024-07-15",
+            "2024-07-17",
+            "2024-07-19",
+            "2024-07-21",
+            "2024-07-23",
+            "2024-07-25",
+            "2024-07-27",
+            "2024-07-29",
+            "2024-07-31",
+          ];
+
+          let repetitionCount = 0;
+          for (const $event of $eventsInEventList) {
+            const isRepetition = repetitionDates.some((date) => {
+              return $event.innerHTML.includes(date);
+            });
+            if (isRepetition) {
+              repetitionCount++;
+              expect($event).toHaveTextContent("반복 event 생성 테스트");
+            }
+          }
+
+          expect(repetitionCount).toBe(repetitionDates.length);
+
+          const $targetEvent = $eventsInEventList.filter((event) =>
+            event.innerHTML.includes("반복 일정")
+          )[0];
+          const $eventDeleteButton =
+            $targetEvent.children[0].children[1].children[1];
+
+          await userEvent.click($eventDeleteButton);
+
+          expect(document.body).toHaveTextContent(
+            "반복 일정에 대한 삭제를 요청하였습니다."
+          );
+          expect(document.body).toHaveTextContent(
+            "해당 일정만 삭제하시겠습니까?"
+          );
+          expect(document.body).toHaveTextContent("전체 삭제");
+          expect(document.body).toHaveTextContent("해당 일정만 삭제");
+        });
+      });
+
+      describe("선택한 일정에만 반영한다고 선택할 경우 반복 일정 중 선택한 일정에만 수정 및 삭제가 반영된다.", () => {
+        test("선택한 일정에만 반영한다고 선택할 경우 반복 일정 중 선택한 일정에만 수정이 반영된다.", async () => {
+          render(<Scheduler />);
+          const testEvent: Omit<Event, "id"> = {
+            title: "반복 event 생성 테스트",
+            date: "2024-07-01",
+            startTime: "12:00",
+            endTime: "12:30",
+            description: "daily scrum",
+            location: "회의실",
+            category: "개인",
+            repeat: { type: "daily", interval: 2 },
+            notificationTime: 10,
+          };
+
+          await typeEventForm(testEvent);
+          await userEvent.click(screen.getByTestId("event-submit-button"));
+          await expectEventListHasEvent(testEvent);
+
+          const $eventsInEventList = screen.getAllByTestId(
+            "event-in-event-list"
+          );
+
+          const repetitionDates = [
+            "2024-07-01",
+            "2024-07-03",
+            "2024-07-05",
+            "2024-07-07",
+            "2024-07-09",
+            "2024-07-11",
+            "2024-07-13",
+            "2024-07-15",
+            "2024-07-17",
+            "2024-07-19",
+            "2024-07-21",
+            "2024-07-23",
+            "2024-07-25",
+            "2024-07-27",
+            "2024-07-29",
+            "2024-07-31",
+          ];
+
+          let repetitionCount = 0;
+          for (const $event of $eventsInEventList) {
+            const isRepetition = repetitionDates.some((date) => {
+              return $event.innerHTML.includes(date);
+            });
+            if (isRepetition) {
+              repetitionCount++;
+              expect($event).toHaveTextContent("반복 event 생성 테스트");
+            }
+          }
+
+          expect(repetitionCount).toBe(repetitionDates.length);
+
+          const updateEvent: Omit<Event, "id"> = {
+            title: "반복 event 수정 테스트",
+            date: "2024-07-02",
+            startTime: "12:00",
+            endTime: "12:30",
+            description: "daily scrum",
+            location: "회의실",
+            category: "개인",
+            repeat: { type: "daily", interval: 2 },
+            notificationTime: 10,
+          };
+
+          const $targetEvent = $eventsInEventList.filter((event) =>
+            event.innerHTML.includes("반복 일정")
+          )[0];
+          const $EventEditButton = $targetEvent.children[1].children[0];
+
+          await userEvent.click($EventEditButton);
+
+          await clearEventForm();
+          await typeEventForm(updateEvent);
+
+          await userEvent.click(screen.getByTestId("event-submit-button"));
+
+          await userEvent.click(
+            screen.getByTestId("edit-only-repetition-event-confirm-button")
+          );
+
+          await expectEventListHasEvent(testEvent);
+
+          await expectEventListHasEvent(updateEvent);
+        });
+
+        test("선택한 일정에만 반영한다고 선택할 경우 반복 일정 중 선택한 일정에만 삭제가 반영된다.", async () => {
+          render(<Scheduler />);
+          const testEvent: Omit<Event, "id"> = {
+            title: "반복 event 생성 테스트",
+            date: "2024-07-01",
+            startTime: "12:00",
+            endTime: "12:30",
+            description: "daily scrum",
+            location: "회의실",
+            category: "개인",
+            repeat: { type: "daily", interval: 2 },
+            notificationTime: 10,
+          };
+
+          await typeEventForm(testEvent);
+          await userEvent.click(screen.getByTestId("event-submit-button"));
+          await expectEventListHasEvent(testEvent);
+
+          const $eventsInEventList = screen.getAllByTestId(
+            "event-in-event-list"
+          );
+
+          const repetitionDates = [
+            "2024-07-01",
+            "2024-07-03",
+            "2024-07-05",
+            "2024-07-07",
+            "2024-07-09",
+            "2024-07-11",
+            "2024-07-13",
+            "2024-07-15",
+            "2024-07-17",
+            "2024-07-19",
+            "2024-07-21",
+            "2024-07-23",
+            "2024-07-25",
+            "2024-07-27",
+            "2024-07-29",
+            "2024-07-31",
+          ];
+
+          let repetitionCount = 0;
+          for (const $event of $eventsInEventList) {
+            const isRepetition = repetitionDates.some((date) => {
+              return $event.innerHTML.includes(date);
+            });
+            if (isRepetition) {
+              repetitionCount++;
+              expect($event).toHaveTextContent("반복 event 생성 테스트");
+            }
+          }
+
+          expect(repetitionCount).toBe(repetitionDates.length);
+
+          const $targetEvent = $eventsInEventList.filter((event) =>
+            event.innerHTML.includes("반복 일정")
+          )[0];
+          const $eventDeleteButton =
+            $targetEvent.children[0].children[1].children[1];
+
+          await userEvent.click($eventDeleteButton);
+
+          await userEvent.click(
+            screen.getByTestId("delete-only-repetition-event-confirm-button")
+          );
+
+          await expectEventListHasEvent(testEvent);
+
+          await waitFor(() => {
+            expect($eventList.innerHTML).not.toContain($targetEvent.outerHTML);
+            expect($eventList).not.toHaveTextContent(targetEventTitle);
+          });
+        });
       });
 
       describe("전체 반복 일정에 반영할 것이라 선택한 경우 같은 부모 일정을 가진 반복 일정에 대해 모두 수정 및 삭제가 반영된다.", () => {
-        test("전체 반복 일정에 반영할 것이라 선택한 경우 같은 부모 일정을 가진 반복 일정에 대해 모두 수정이 반영된다.", async () => {});
-        test("전체 반복 일정에 반영할 것이라 선택한 경우 같은 부모 일정을 가진 반복 일정에 대해 모두 삭제가 반영된다.", async () => {});
+        test("전체 반복 일정에 반영할 것이라 선택한 경우 같은 부모 일정을 가진 반복 일정에 대해 모두 수정이 반영된다.", async () => {
+          render(<Scheduler />);
+          const testEvent: Omit<Event, "id"> = {
+            title: "반복 event 생성 테스트",
+            date: "2024-07-01",
+            startTime: "12:00",
+            endTime: "12:30",
+            description: "daily scrum",
+            location: "회의실",
+            category: "개인",
+            repeat: { type: "daily", interval: 2 },
+            notificationTime: 10,
+          };
+
+          await typeEventForm(testEvent);
+          await userEvent.click(screen.getByTestId("event-submit-button"));
+          await expectEventListHasEvent(testEvent);
+
+          const $eventsInEventList = screen.getAllByTestId(
+            "event-in-event-list"
+          );
+
+          const repetitionDates = [
+            "2024-07-03",
+            "2024-07-05",
+            "2024-07-07",
+            "2024-07-09",
+            "2024-07-11",
+            "2024-07-13",
+            "2024-07-15",
+            "2024-07-17",
+            "2024-07-19",
+            "2024-07-21",
+            "2024-07-23",
+            "2024-07-25",
+            "2024-07-27",
+            "2024-07-29",
+            "2024-07-31",
+          ];
+
+          let repetitionCount = 0;
+          for (const $event of $eventsInEventList) {
+            const isRepetition = repetitionDates.some((date) => {
+              return $event.innerHTML.includes(date);
+            });
+            if (isRepetition) {
+              repetitionCount++;
+              expect($event).toHaveTextContent("반복 event 생성 테스트");
+            }
+          }
+
+          expect(repetitionCount).toBe(repetitionDates.length);
+
+          const updateEvent: Omit<Event, "id"> = {
+            title: "반복 event 수정 테스트",
+            date: "2024-07-02",
+            startTime: "12:00",
+            endTime: "12:30",
+            description: "daily scrum",
+            location: "회의실",
+            category: "개인",
+            repeat: { type: "daily", interval: 2 },
+            notificationTime: 10,
+          };
+
+          const $targetEvent = $eventsInEventList.filter((event) =>
+            event.innerHTML.includes("반복 일정")
+          )[0];
+          const $EventEditButton = $targetEvent.children[1].children[0];
+
+          await userEvent.click($EventEditButton);
+
+          await clearEventForm();
+          await typeEventForm(updateEvent);
+
+          await userEvent.click(screen.getByTestId("event-submit-button"));
+
+          await userEvent.click(
+            screen.getByTestId("edit-all-event-confirm-button")
+          );
+
+          await waitFor(() => {
+            expect(screen.getAllByText("반복 event 수정 테스트").length).toBe(
+              repetitionDates.length + 1
+            );
+          });
+        });
+
+        test("전체 반복 일정에 반영할 것이라 선택한 경우 같은 부모 일정을 가진 반복 일정에 대해 모두 삭제가 반영된다.", async () => {
+          render(<Scheduler />);
+          const testEvent: Omit<Event, "id"> = {
+            title: "반복 event 생성 테스트",
+            date: "2024-07-01",
+            startTime: "12:00",
+            endTime: "12:30",
+            description: "daily scrum",
+            location: "회의실",
+            category: "개인",
+            repeat: { type: "daily", interval: 2 },
+            notificationTime: 10,
+          };
+
+          await typeEventForm(testEvent);
+          await userEvent.click(screen.getByTestId("event-submit-button"));
+          await expectEventListHasEvent(testEvent);
+
+          const $eventsInEventList = screen.getAllByTestId(
+            "event-in-event-list"
+          );
+
+          const repetitionDates = [
+            "2024-07-01",
+            "2024-07-03",
+            "2024-07-05",
+            "2024-07-07",
+            "2024-07-09",
+            "2024-07-11",
+            "2024-07-13",
+            "2024-07-15",
+            "2024-07-17",
+            "2024-07-19",
+            "2024-07-21",
+            "2024-07-23",
+            "2024-07-25",
+            "2024-07-27",
+            "2024-07-29",
+            "2024-07-31",
+          ];
+
+          let repetitionCount = 0;
+          for (const $event of $eventsInEventList) {
+            const isRepetition = repetitionDates.some((date) => {
+              return $event.innerHTML.includes(date);
+            });
+            if (isRepetition) {
+              repetitionCount++;
+              expect($event).toHaveTextContent("반복 event 생성 테스트");
+            }
+          }
+
+          expect(repetitionCount).toBe(repetitionDates.length);
+
+          const $targetEvent = $eventsInEventList.filter((event) =>
+            event.innerHTML.includes("반복 일정")
+          )[0];
+          const $eventDeleteButton =
+            $targetEvent.children[0].children[1].children[1];
+
+          await userEvent.click($eventDeleteButton);
+
+          await userEvent.click(
+            screen.getByTestId("delete-all-event-confirm-button")
+          );
+
+          const $eventList = await screen.findByTestId("event-list");
+          await waitFor(() => {
+            expect($eventList).toHaveTextContent("검색 결과가 없습니다.");
+          });
+        });
       });
     });
   });
