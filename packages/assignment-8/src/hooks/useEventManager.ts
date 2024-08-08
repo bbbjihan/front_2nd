@@ -85,7 +85,7 @@ const useEventManager = ({
       const newEvent = getEventGeneratedRepeatChildren(eventData);
 
       if (editingEvent) {
-        response = await fetch(`/api/events/${eventData.id}`, {
+        response = await fetch(`/api/events/${newEvent.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

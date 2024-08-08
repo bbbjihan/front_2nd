@@ -812,7 +812,9 @@ describe("반복 일정 테스트", () => {
         const $targetEvent = $eventsInEventList.filter(
           (event) => !event.innerHTML.includes("반복 일정")
         )[0];
-        const $EventEditButton = $targetEvent.children[1].children[0];
+        console.log($targetEvent.children[0].children[1].children[0].outerHTML);
+        const $EventEditButton =
+          $targetEvent.children[0].children[1].children[0];
 
         await userEvent.click($EventEditButton);
 
@@ -826,7 +828,6 @@ describe("반복 일정 테스트", () => {
         repetitionDates = [
           "2024-07-04",
           "2024-07-06",
-          "2024-07-03",
           "2024-07-08",
           "2024-07-10",
           "2024-07-12",
@@ -842,7 +843,10 @@ describe("반복 일정 테스트", () => {
         ];
         repetitionCount = 0;
 
-        for (const $event of $eventsInEventList) {
+        const $newEventsInEventList = screen.getAllByTestId(
+          "event-in-event-list"
+        );
+        for (const $event of $newEventsInEventList) {
           const isRepetition = repetitionDates.some((date) => {
             return $event.innerHTML.includes(date);
           });
