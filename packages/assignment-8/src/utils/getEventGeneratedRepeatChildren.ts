@@ -1,6 +1,6 @@
 import { Event, RepeatType } from "@/types";
 
-const getEventGeneratedRepeatChdilren = (event: Event) => {
+const getEventGeneratedRepeatChildren = (event: Event) => {
   const { repeat } = event;
   const eventWithChildren = structuredClone(event);
 
@@ -8,8 +8,7 @@ const getEventGeneratedRepeatChdilren = (event: Event) => {
     return eventWithChildren;
   }
 
-  // const { type, interval, weekdays, monthdays, weekdayRepeatByMonth } = repeat;
-  const endDate = repeat.endDate ?? getDefaultDate(event.date);
+  const endDate = repeat.endDate ?? getDefaultDate(event.date, repeat.type);
 
   const children = generateChildren(event, endDate);
 
@@ -25,16 +24,12 @@ const generateChildren = (parent: Event, endDate: string) => {
   const now = new Date(parent.date);
 
   while (now <= end) {
-    if (now >= start) {
+    if (now > start) {
       children.push({
         ...parent,
         parentId: parent.id,
         id: Math.ceil(Math.random() * 100000000),
         date: now.toISOString().split("T")[0],
-        repeat: {
-          type: "children",
-          interval: 1,
-        },
       });
     }
 
@@ -58,17 +53,24 @@ const addInterval = (date: Date, type: RepeatType, interval: number) => {
     case "yearly":
       date.setFullYear(date.getFullYear() + interval);
       break;
-    default:
-      throw new Error("Unsupported repeat type");
   }
 };
 
-const getDefaultDate = (dateStr: string) => {
+const getDefaultDate = (dateStr: string, type: RepeatType) => {
   const date = new Date(dateStr);
   const newDate = new Date(date);
-  newDate.setFullYear(date.getFullYear() + 1);
+  switch (type) {
+    case "monthly":
+      newDate.setFullYear(date.getFullYear() + 3);
+      break;
+    case "yearly":
+      newDate.setFullYear(date.getFullYear() + 5);
+      break;
+    default:
+      newDate.setFullYear(date.getFullYear() + 1);
+  }
 
   return newDate.toISOString().split("T")[0];
 };
 
-export default getEventGeneratedRepeatChdilren;
+export default getEventGeneratedRepeatChildren;

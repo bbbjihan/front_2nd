@@ -42,11 +42,12 @@ export const typeEventForm = async (event: Omit<Event, "id">) => {
   if (!isRepetitionChecked) {
     await userEvent.click(screen.getByLabelText("반복 설정"));
   }
-
   await userEvent.selectOptions(
     screen.getByLabelText("반복 유형"),
     event.repeat.type
   );
+
+  await userEvent.clear(screen.getByLabelText("반복 간격"));
   await userEvent.type(
     screen.getByLabelText("반복 간격"),
     event.repeat.interval.toString()

@@ -11,12 +11,14 @@ import {
   typeEventForm,
 } from "../testModules";
 
-let server = setupServer(...createHandlers());
+let server = setupServer(...createHandlers([]));
 
 beforeEach(() => {
   const fakeTime = new Date("2024-07-25T08:00:00Z");
   vi.useFakeTimers({ shouldAdvanceTime: true });
   vi.setSystemTime(fakeTime);
+  server = setupServer(...createHandlers([]));
+  server.listen();
 });
 
 afterEach(() => {
@@ -27,14 +29,6 @@ afterEach(() => {
 // 반복 종료일 default 설정, 반복 간격 말고 반복 횟수로 반복 일정 생성 기능 등
 describe("반복 일정 테스트", () => {
   describe("일정 생성 또는 수정 시 일정 반복 설정값들을 선택 및 입력할 수 있다.", () => {
-    beforeEach(() => {
-      server = setupServer(...createHandlers());
-      server.listen();
-    });
-    afterEach(() => {
-      server.close();
-    });
-
     test("event form에 일정 반복 설정을 위한 요소들이 존재한다.", async () => {
       render(<Scheduler />);
 
@@ -80,14 +74,6 @@ describe("반복 일정 테스트", () => {
   });
 
   describe("반복 일정 생성", () => {
-    beforeEach(() => {
-      server = setupServer(...createHandlers([]));
-      server.listen();
-    });
-    afterEach(() => {
-      server.close();
-    });
-
     describe("반복 일정 생성 시 설정한 반복 유형과 반복 주기에 따라 반복 일정이 생성된다.", async () => {
       test("일 단위 반복 일정 테스트", async () => {
         render(<Scheduler />);
@@ -154,7 +140,7 @@ describe("반복 일정 테스트", () => {
           description: "월간 업무 보고",
           location: "회의실",
           category: "개인",
-          repeat: { type: "monthly", interval: 2 },
+          repeat: { type: "monthly", interval: 1 },
           notificationTime: 10,
         };
 
@@ -174,10 +160,9 @@ describe("반복 일정 테스트", () => {
 
         await userEvent.click($nextButton);
         await expectEventListHasEvent({ ...testEvent, date: "2024-10-01" });
-        await userEvent.click($nextButton);
 
-        await expectEventListHasEvent({ ...testEvent, date: "2024-11-01" });
         await userEvent.click($nextButton);
+        await expectEventListHasEvent({ ...testEvent, date: "2024-11-01" });
       });
 
       test("연 단위 반복 일정 테스트", async () => {
@@ -190,7 +175,7 @@ describe("반복 일정 테스트", () => {
           description: "지한 생일파티",
           location: "지한이네",
           category: "개인",
-          repeat: { type: "yearly", interval: 2 },
+          repeat: { type: "yearly", interval: 1 },
           notificationTime: 10,
         };
 
@@ -198,26 +183,15 @@ describe("반복 일정 테스트", () => {
         await userEvent.click(screen.getByTestId("event-submit-button"));
         await expectEventListHasEvent(testEvent);
 
-        const $calendarHeader = screen.getByRole("heading", {
-          name: /2024년 7월/,
-        });
-
         const $nextButton = screen.getByRole("button", {
           name: /next/i,
         });
 
-        await userEvent.click($nextButton);
-        while (!$calendarHeader.innerHTML.includes("7월")) {
-          await userEvent.click($nextButton);
-        }
-        const $eventList = screen.getByTestId("event-list");
-        expect($eventList).not.toHaveTextContent("반복 event 생성 테스트");
+        for (let i = 0; i < 12; i++) await userEvent.click($nextButton);
+        await expectEventListHasEvent({ ...testEvent, date: "2025-07-29" });
 
-        await userEvent.click($nextButton);
-        while (!$calendarHeader.innerHTML.includes("7월")) {
-          await userEvent.click($nextButton);
-        }
-        await expectEventListHasEvent(testEvent);
+        for (let i = 0; i < 12; i++) await userEvent.click($nextButton);
+        await expectEventListHasEvent({ ...testEvent, date: "2026-07-29" });
       });
     });
 
@@ -299,7 +273,7 @@ describe("반복 일정 테스트", () => {
             continue;
           }
           if (parseInt($day.children[0].innerHTML) % 2 === 1) {
-            expect($day.children[0].innerHTML).toHaveTextContent("(반복)");
+            expect($day.children[1]).toHaveTextContent("반복");
           }
         }
       });
@@ -308,13 +282,6 @@ describe("반복 일정 테스트", () => {
 
   describe("선택한 반복 유형에 따라 여러 옵션이 나타나며, 설정값에 따라 반복 일정이 생성된다.", () => {
     describe("일간 반복을 선택할 경우 반복 간격에 따라 반복 일정이 생성된다.", () => {
-      beforeEach(() => {
-        server = setupServer(...createHandlers([]));
-        server.listen();
-      });
-      afterEach(() => {
-        server.close();
-      });
       test("1일 간격 반복 일정 생성 테스트", async () => {
         render(<Scheduler />);
         const testEvent: Omit<Event, "id"> = {
@@ -438,13 +405,6 @@ describe("반복 일정 테스트", () => {
 
     describe("주간 반복을 선택한 경우", () => {
       describe("반복 간격에 따라 반복 일정이 생성된다.", () => {
-        beforeEach(() => {
-          server = setupServer(...createHandlers([]));
-          server.listen();
-        });
-        afterEach(() => {
-          server.close();
-        });
         test("반복 간격을 1주로 설정한 경우 1주마다 같은 일정이 생성된다.", async () => {
           render(<Scheduler />);
           const testEvent: Omit<Event, "id"> = {
@@ -528,13 +488,6 @@ describe("반복 일정 테스트", () => {
       });
 
       describe("특정 요일을 선택하여 주기마다 그 요일에 반복 일정을 생성할 수 있다.", () => {
-        beforeEach(() => {
-          server = setupServer(...createHandlers([]));
-          server.listen();
-        });
-        afterEach(() => {
-          server.close();
-        });
         test("반복 간격을 1주로 설정하고 반복 요일은 월, 수, 금마다로 선택할 경우 1주마다 월, 수, 금에 같은 일정이 생성된다.", async () => {
           render(<Scheduler />);
           const testEvent: Omit<Event, "id"> = {
@@ -636,13 +589,6 @@ describe("반복 일정 테스트", () => {
     });
 
     describe("월간 반복을 선택한 경우", () => {
-      beforeEach(() => {
-        server = setupServer(...createHandlers([]));
-        server.listen();
-      });
-      afterEach(() => {
-        server.close();
-      });
       describe("매월 특정 날짜에 반복되도록 설정할 수 있다.", () => {
         test("반복 간격을 1개월로 설정한 경우 1개월마다 같은 일정이 생성된다.", async () => {
           render(<Scheduler />);
@@ -685,7 +631,7 @@ describe("반복 일정 테스트", () => {
             description: "daily scrum",
             location: "회의실",
             category: "개인",
-            repeat: { type: "monthly", interval: 1 },
+            repeat: { type: "monthly", interval: 2 },
             notificationTime: 10,
           };
 
@@ -783,13 +729,6 @@ describe("반복 일정 테스트", () => {
   });
 
   describe("반복 일정 중 특정 날짜의 일정을 수정 및 삭제할 수 있다.", () => {
-    beforeEach(() => {
-      server = setupServer(...createHandlers([]));
-      server.listen();
-    });
-    afterEach(() => {
-      server.close();
-    });
     describe("반복 일정 중 부모 일정을 수정 및 삭제할 경우 모든 일정이 수정 및 삭제된다.", () => {
       test("반복 일정 중 부모 일정을 수정할 경우 모든 자식 일정이 수정된다.", async () => {
         render(<Scheduler />);

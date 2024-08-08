@@ -1,5 +1,5 @@
 import { Event, SetState } from "@/types";
-import getEventGeneratedRepeatChdilren from "@/utils/generateRepeatEvents";
+import getEventGeneratedRepeatChildren from "@/utils/getEventGeneratedRepeatChildren";
 import { useToast } from "@chakra-ui/react";
 import { useEffect } from "react";
 
@@ -60,7 +60,7 @@ const useEventManager = ({
       const events = await response
         .json()
         .then((res) =>
-          res.map((event: Event) => getEventGeneratedRepeatChdilren(event))
+          res.map((event: Event) => getEventGeneratedRepeatChildren(event))
         );
 
       setEvents(events);
@@ -82,7 +82,7 @@ const useEventManager = ({
     try {
       let response;
 
-      const newEvent = getEventGeneratedRepeatChdilren(eventData);
+      const newEvent = getEventGeneratedRepeatChildren(eventData);
 
       if (editingEvent) {
         response = await fetch(`/api/events/${eventData.id}`, {
