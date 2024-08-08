@@ -142,6 +142,7 @@ const EventForm = ({ addOrUpdateEvent, eventForm }: Props) => {
                 eventForm.setRepeatType(e.target.value as RepeatType)
               }
             >
+              <option value="none">반복없음</option>
               <option value="daily">매일</option>
               <option value="weekly">매주</option>
               <option value="monthly">매월</option>
@@ -160,6 +161,36 @@ const EventForm = ({ addOrUpdateEvent, eventForm }: Props) => {
                 min={1}
               />
             </FormControl>
+            {eventForm.repeatType === "weekly" && (
+              <FormControl>
+                <FormLabel>요일 설정</FormLabel>
+                <Input
+                  type="date"
+                  value={eventForm.repeatEndDate}
+                  onChange={(e) => eventForm.setRepeatEndDate(e.target.value)}
+                />
+              </FormControl> // TODO: value, onchange 구현
+            )}
+            {eventForm.repeatType === "monthly" && (
+              <FormControl>
+                <FormLabel>날짜 설정</FormLabel>
+                <Input
+                  type="date"
+                  value={eventForm.repeatEndDate}
+                  onChange={(e) => eventForm.setRepeatEndDate(e.target.value)}
+                />
+              </FormControl>
+            )}
+            {eventForm.repeatType === "monthly" && (
+              <FormControl>
+                <FormLabel>주 기준 반복 설정</FormLabel>
+                <Input
+                  type="date"
+                  value={eventForm.repeatEndDate}
+                  onChange={(e) => eventForm.setRepeatEndDate(e.target.value)}
+                />
+              </FormControl>
+            )}
             <FormControl>
               <FormLabel>반복 종료일</FormLabel>
               <Input
