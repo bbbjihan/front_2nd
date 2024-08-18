@@ -1,12 +1,17 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import { ChakraProvider } from '@chakra-ui/react'
+import Scheduler from "@/Scheduler/index.tsx";
+import { ChakraProvider } from "@chakra-ui/react";
+import ReactDOM from "react-dom/client";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+async function enableMocking() {
+  const { worker } = await import("@/mocks/mockServiceWorker/browser.ts");
+
+  return worker.start();
+}
+
+enableMocking().then(() => {
+  ReactDOM.createRoot(document.getElementById("root")!).render(
     <ChakraProvider>
-      <App />
+      <Scheduler />
     </ChakraProvider>
-  </React.StrictMode>,
-)
+  );
+});

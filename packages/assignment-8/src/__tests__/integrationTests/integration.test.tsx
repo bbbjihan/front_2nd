@@ -6,7 +6,12 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { getAlarmBoundary } from "./testutils";
+import {
+  clearEventForm,
+  expectEventListHasEvent,
+  typeEventForm,
+} from "../testModules";
+import { getAlarmBoundary } from "../testUtils";
 
 let server = setupServer(...createHandlers());
 
@@ -20,52 +25,6 @@ afterEach(() => {
   vi.useRealTimers();
   server.close();
 });
-
-const clearEventForm = async () => {
-  await userEvent.clear(screen.getByLabelText("제목"));
-  await userEvent.clear(screen.getByLabelText("날짜"));
-  await userEvent.clear(screen.getByLabelText("시작 시간"));
-  await userEvent.clear(screen.getByLabelText("종료 시간"));
-  await userEvent.clear(screen.getByLabelText("설명"));
-  await userEvent.clear(screen.getByLabelText("위치"));
-};
-
-const typeEventForm = async (event: Omit<Event, "id">) => {
-  await userEvent.type(screen.getByLabelText("제목"), event.title);
-  await userEvent.type(screen.getByLabelText("날짜"), event.date);
-  await userEvent.type(screen.getByLabelText("시작 시간"), event.startTime);
-  await userEvent.type(screen.getByLabelText("종료 시간"), event.endTime);
-  await userEvent.type(screen.getByLabelText("설명"), event.description);
-  await userEvent.type(screen.getByLabelText("위치"), event.location);
-  await userEvent.selectOptions(
-    screen.getByLabelText("카테고리"),
-    event.category
-  );
-  await userEvent.selectOptions(
-    screen.getByLabelText("알림 설정"),
-    `${event.notificationTime}`
-  );
-};
-
-const expectEventListHasEvent = async (event: Omit<Event, "id">) => {
-  const $eventList = await screen.findByTestId("event-list");
-
-  await waitFor(() => {
-    const eventText = [
-      event.title,
-      event.date,
-      event.startTime,
-      event.endTime,
-      event.description,
-      event.location,
-      event.category,
-    ];
-
-    eventText.forEach((text) => {
-      expect($eventList).toHaveTextContent(text);
-    });
-  });
-};
 
 describe("일정 관리 애플리케이션 통합 테스트", () => {
   describe("일정 CRUD 및 기본 기능", () => {
@@ -94,7 +53,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "지한 생일파티",
         location: "지한이네",
         category: "개인",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 10,
       };
 
@@ -120,7 +79,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "지한 생일파티",
         location: "지한이네",
         category: "개인",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 10,
       };
 
@@ -442,7 +401,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "일정 충돌 테스트 설명",
         location: "피시방",
         category: "개인",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 10,
       };
 
@@ -454,7 +413,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "일정 충돌 테스트2 설명",
         location: "노래방",
         category: "업무",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 10,
       };
 
@@ -481,7 +440,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "일정 충돌 테스트 설명",
         location: "피시방",
         category: "개인",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 10,
       };
 
@@ -493,7 +452,7 @@ describe("일정 관리 애플리케이션 통합 테스트", () => {
         description: "일정 충돌 테스트2 설명",
         location: "노래방",
         category: "업무",
-        repeat: { type: "yearly", interval: 1 },
+        repeat: { type: "none", interval: 1 },
         notificationTime: 60,
       };
 
