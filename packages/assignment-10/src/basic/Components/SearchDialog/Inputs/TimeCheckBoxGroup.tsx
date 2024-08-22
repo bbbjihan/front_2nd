@@ -1,3 +1,5 @@
+import { TIME_SLOTS } from "@/basic/constants";
+import { SearchOption } from "@/basic/types";
 import {
   Box,
   Checkbox,
@@ -11,8 +13,6 @@ import {
   Wrap,
 } from "@chakra-ui/react";
 import { memo } from "react";
-import { TIME_SLOTS } from "../../constants";
-import { SearchOption } from "../../types";
 
 interface Props {
   changeSearchOption: (

@@ -1,9 +1,9 @@
+import ScheduleTable from "@/basic/Components/ScheduleTables/ScheduleTable";
+import SearchDialog from "@/basic/Components/SearchDialog";
+import { useScheduleContext } from "@/basic/Contexts/ScheduleContext";
+import { SearchInfo } from "@/basic/types";
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import { useState } from "react";
-import { useScheduleContext } from "./ScheduleContext.tsx";
-import ScheduleTable from "./ScheduleTable.tsx";
-import SearchDialog from "./SearchDialog/index.tsx";
-import { SearchInfo } from "./types.ts";
 
 export const ScheduleTables = () => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();

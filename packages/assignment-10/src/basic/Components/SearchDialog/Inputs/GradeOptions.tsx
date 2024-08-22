@@ -1,3 +1,4 @@
+import { SearchOption } from "@/basic/types";
 import {
   Checkbox,
   CheckboxGroup,
@@ -6,28 +7,26 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { memo } from "react";
-import { DAY_LABELS } from "../../constants";
-import { SearchOption } from "../../types";
 
 interface Props {
   changeSearchOption: (
     field: keyof SearchOption,
     value: SearchOption[typeof field]
   ) => void;
-  value: string[];
+  value: number[] | undefined;
 }
-const DayCheckBoxGroup = ({ value, changeSearchOption }: Props) => {
+const GradeOptions = ({ value, changeSearchOption }: Props) => {
   return (
     <FormControl>
-      <FormLabel>요일</FormLabel>
+      <FormLabel>학년</FormLabel>
       <CheckboxGroup
         value={value}
-        onChange={(value) => changeSearchOption("days", value as string[])}
+        onChange={(value) => changeSearchOption("grades", value.map(Number))}
       >
         <HStack spacing={4}>
-          {DAY_LABELS.map((day) => (
-            <Checkbox key={day} value={day}>
-              {day}
+          {[1, 2, 3, 4].map((grade) => (
+            <Checkbox key={grade} value={grade}>
+              {grade}학년
             </Checkbox>
           ))}
         </HStack>
@@ -36,4 +35,4 @@ const DayCheckBoxGroup = ({ value, changeSearchOption }: Props) => {
   );
 };
 
-export default memo(DayCheckBoxGroup);
+export default memo(GradeOptions);

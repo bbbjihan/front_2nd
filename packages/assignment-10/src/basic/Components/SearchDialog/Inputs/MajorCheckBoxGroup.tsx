@@ -1,3 +1,4 @@
+import { SearchOption } from "@/basic/types";
 import {
   Box,
   Checkbox,
@@ -11,7 +12,6 @@ import {
   Wrap,
 } from "@chakra-ui/react";
 import { memo } from "react";
-import { SearchOption } from "../../types";
 
 interface Props {
   changeSearchOption: (

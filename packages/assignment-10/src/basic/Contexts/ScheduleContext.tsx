@@ -1,11 +1,11 @@
+import dummyScheduleMap from "@/basic/mocks/dummyScheduleMap";
+import { Schedule } from "@/basic/types";
 import React, {
   createContext,
   PropsWithChildren,
   useContext,
   useState,
 } from "react";
-import dummyScheduleMap from "./dummyScheduleMap.ts";
-import { Schedule } from "./types.ts";
 
 interface ScheduleContextType {
   schedulesMap: Record<string, Schedule[]>;

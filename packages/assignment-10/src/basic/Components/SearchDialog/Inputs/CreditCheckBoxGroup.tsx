@@ -1,6 +1,6 @@
+import { SearchOption } from "@/basic/types";
 import { FormControl, FormLabel, Select } from "@chakra-ui/react";
 import { memo } from "react";
-import { SearchOption } from "../../types";
 
 interface Props {
   changeSearchOption: (

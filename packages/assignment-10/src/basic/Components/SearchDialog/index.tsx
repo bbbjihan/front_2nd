@@ -1,6 +1,7 @@
+import { useScheduleContext } from "@/basic/Contexts/ScheduleContext";
+import { Lecture, SearchInfo, SearchOption } from "@/basic/types";
+import { parseSchedule } from "@/basic/utils";
 import {
-  Box,
-  Button,
   HStack,
   Modal,
   ModalBody,
@@ -8,26 +9,18 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Table,
-  Tbody,
-  Td,
   Text,
-  Th,
-  Thead,
-  Tr,
   VStack,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useScheduleContext } from "../ScheduleContext.tsx";
-import { Lecture, SearchInfo, SearchOption } from "../types.ts";
-import { parseSchedule } from "../utils.ts";
-import CreditCheckBoxGroup from "./Inputs/CreditCheckBoxGroup.tsx";
-import DayCheckBoxGroup from "./Inputs/DayCheckBoxGroup.tsx";
-import GradeOptions from "./Inputs/GradeOptions.tsx";
-import MajorCheckBoxGroup from "./Inputs/MajorCheckBoxGroup.tsx";
-import SearchBar from "./Inputs/SearchBar.tsx";
-import TimeCheckBoxGroup from "./Inputs/TimeCheckBoxGroup.tsx";
+import CreditCheckBoxGroup from "./Inputs/CreditCheckBoxGroup";
+import DayCheckBoxGroup from "./Inputs/DayCheckBoxGroup";
+import GradeOptions from "./Inputs/GradeOptions";
+import MajorCheckBoxGroup from "./Inputs/MajorCheckBoxGroup";
+import SearchBar from "./Inputs/SearchBar";
+import TimeCheckBoxGroup from "./Inputs/TimeCheckBoxGroup";
+import LectureTable from "./LectureTable/index";
 
 interface Props {
   searchInfo: SearchInfo | null;
@@ -251,54 +244,13 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
               />
             </HStack>
             <Text align="right">검색결과: {filteredLectures.length}개</Text>
-            <Box>
-              <Table>
-                <Thead>
-                  <Tr>
-                    <Th width="100px">과목코드</Th>
-                    <Th width="50px">학년</Th>
-                    <Th width="200px">과목명</Th>
-                    <Th width="50px">학점</Th>
-                    <Th width="150px">전공</Th>
-                    <Th width="150px">시간</Th>
-                    <Th width="80px"></Th>
-                  </Tr>
-                </Thead>
-              </Table>
 
-              <Box overflowY="auto" maxH="500px" ref={loaderWrapperRef}>
-                <Table size="sm" variant="striped">
-                  <Tbody>
-                    {visibleLectures.map((lecture, index) => (
-                      <Tr key={`${lecture.id}-${index}`}>
-                        <Td width="100px">{lecture.id}</Td>
-                        <Td width="50px">{lecture.grade}</Td>
-                        <Td width="200px">{lecture.title}</Td>
-                        <Td width="50px">{lecture.credits}</Td>
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.major }}
-                        />
-                        <Td
-                          width="150px"
-                          dangerouslySetInnerHTML={{ __html: lecture.schedule }}
-                        />
-                        <Td width="80px">
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            onClick={() => addSchedule(lecture)}
-                          >
-                            추가
-                          </Button>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-                <Box ref={loaderRef} h="20px" />
-              </Box>
-            </Box>
+            <LectureTable
+              visibleLectures={visibleLectures}
+              addSchedule={addSchedule}
+              loaderWrapperRef={loaderWrapperRef}
+              loaderRef={loaderRef}
+            />
           </VStack>
         </ModalBody>
       </ModalContent>

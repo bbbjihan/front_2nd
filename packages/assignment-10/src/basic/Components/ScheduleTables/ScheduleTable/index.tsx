@@ -1,3 +1,6 @@
+import { CellSize, DAY_LABELS, 분 } from "@/basic/constants";
+import { Schedule } from "@/basic/types";
+import { fill2, parseHnM } from "@/basic/utils";
 import {
   Box,
   Button,
@@ -15,9 +18,6 @@ import {
 import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { ComponentProps, Fragment } from "react";
-import { CellSize, DAY_LABELS, 분 } from "./constants.ts";
-import { Schedule } from "./types.ts";
-import { fill2, parseHnM } from "./utils.ts";
 
 interface Props {
   tableId: string;
