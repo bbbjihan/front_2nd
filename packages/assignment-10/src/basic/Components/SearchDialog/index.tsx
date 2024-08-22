@@ -1,3 +1,4 @@
+import { fetchAllLectures } from "@/basic/apis";
 import { useScheduleContext } from "@/basic/Contexts/ScheduleContext";
 import { Lecture, SearchInfo, SearchOption } from "@/basic/types";
 import { parseSchedule } from "@/basic/utils";
@@ -12,8 +13,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import axios from "axios";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CreditCheckBoxGroup from "./Inputs/CreditCheckBoxGroup";
 import DayCheckBoxGroup from "./Inputs/DayCheckBoxGroup";
 import GradeOptions from "./Inputs/GradeOptions";
@@ -23,44 +23,15 @@ import TimeCheckBoxGroup from "./Inputs/TimeCheckBoxGroup";
 import LectureTable from "./LectureTable/index";
 
 interface Props {
+  isOpen: boolean;
   searchInfo: SearchInfo | null;
   onClose: () => void;
 }
 
 const PAGE_SIZE = 100;
 
-function attachCache<T>(fetch: () => Promise<T>): () => Promise<T> {
-  let cache: T | undefined;
-
-  return async function () {
-    if (!cache) {
-      cache = await fetch();
-    }
-
-    return cache;
-  };
-}
-
-const fetchMajors = attachCache(() =>
-  axios.get<Lecture[]>("/schedules-majors.json")
-);
-const fetchLiberalArts = attachCache(() =>
-  axios.get<Lecture[]>("/schedules-liberal-arts.json")
-);
-
-// TODO: 이 코드를 개선해서 API 호출을 최소화 해보세요 + Promise.all이 현재 잘못 사용되고 있습니다. 같이 개선해주세요.
-const fetchAllLectures = async () =>
-  await Promise.all([
-    (console.log("API Call 1", performance.now()), fetchMajors()),
-    (console.log("API Call 2", performance.now()), fetchLiberalArts()),
-    (console.log("API Call 3", performance.now()), fetchMajors()),
-    (console.log("API Call 4", performance.now()), fetchLiberalArts()),
-    (console.log("API Call 5", performance.now()), fetchMajors()),
-    (console.log("API Call 6", performance.now()), fetchLiberalArts()),
-  ]);
-
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
-const SearchDialog = ({ searchInfo, onClose }: Props) => {
+const SearchDialog = ({ isOpen, searchInfo, onClose }: Props) => {
   console.count("rerender");
 
   const { setSchedulesMap } = useScheduleContext();
@@ -77,7 +48,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     majors: [],
   });
 
-  const getFilteredLectures = () => {
+  const filteredLectures = useMemo(() => {
     const { query = "", credits, grades, days, times, majors } = searchOptions;
     return lectures
       .filter(
@@ -114,12 +85,8 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
           s.range.some((time) => times.includes(time))
         );
       });
-  };
+  }, [lectures, searchOptions]);
 
-  const filteredLectures = useMemo(
-    () => getFilteredLectures(),
-    [lectures, searchOptions]
-  );
   const lastPage = Math.ceil(filteredLectures.length / PAGE_SIZE);
   const visibleLectures = useMemo(
     () => filteredLectures.slice(0, page * PAGE_SIZE),
@@ -130,36 +97,40 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
     [lectures]
   );
 
-  const changeSearchOption = (
-    field: keyof SearchOption,
-    value: SearchOption[typeof field]
-  ) => {
-    setPage(1);
-    setSearchOptions({ ...searchOptions, [field]: value });
-    loaderWrapperRef.current?.scrollTo(0, 0);
-  };
+  const changeSearchOption = useCallback(
+    (field: keyof SearchOption, value: SearchOption[typeof field]) => {
+      setPage(1);
+      setSearchOptions((prev) => ({ ...prev, [field]: value }));
+      loaderWrapperRef.current?.scrollTo(0, 0);
+    },
+    []
+  );
 
-  const addSchedule = (lecture: Lecture) => {
-    if (!searchInfo) return;
+  const addSchedule = useCallback(
+    (lecture: Lecture) => {
+      if (!searchInfo) return;
 
-    const { tableId } = searchInfo;
+      const { tableId } = searchInfo;
 
-    const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
-      ...schedule,
-      lecture,
-    }));
+      const schedules = parseSchedule(lecture.schedule).map((schedule) => ({
+        ...schedule,
+        lecture,
+      }));
 
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
-    }));
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: [...prev[tableId], ...schedules],
+      }));
 
-    onClose();
-  };
+      onClose();
+    },
+    [searchInfo, onClose, setSchedulesMap]
+  );
 
   useEffect(() => {
     const start = performance.now();
     console.log("API 호출 시작: ", start);
+
     fetchAllLectures().then((results) => {
       const end = performance.now();
       console.log("모든 API 호출 완료 ", end);
@@ -200,7 +171,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   }, [searchInfo]);
 
   return (
-    <Modal isOpen={Boolean(searchInfo)} onClose={onClose} size="6xl">
+    <Modal isOpen={isOpen} onClose={onClose} size="6xl">
       <ModalOverlay />
       <ModalContent maxW="90vw" w="1000px">
         <ModalHeader>수업 검색</ModalHeader>
@@ -212,7 +183,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 value={searchOptions.query}
                 changeSearchOption={changeSearchOption}
               />
-
               <CreditCheckBoxGroup
                 value={searchOptions.credits}
                 changeSearchOption={changeSearchOption}
@@ -224,7 +194,6 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 value={searchOptions.grades}
                 changeSearchOption={changeSearchOption}
               />
-
               <DayCheckBoxGroup
                 value={searchOptions.days}
                 changeSearchOption={changeSearchOption}
@@ -236,15 +205,14 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
                 value={searchOptions.times}
                 changeSearchOption={changeSearchOption}
               />
-
               <MajorCheckBoxGroup
                 value={searchOptions.majors}
                 changeSearchOption={changeSearchOption}
                 allMajors={allMajors}
               />
             </HStack>
-            <Text align="right">검색결과: {filteredLectures.length}개</Text>
 
+            <Text align="right">검색결과: {filteredLectures.length}개</Text>
             <LectureTable
               visibleLectures={visibleLectures}
               addSchedule={addSchedule}
@@ -258,4 +226,4 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
   );
 };
 
-export default SearchDialog;
+export default memo(SearchDialog);

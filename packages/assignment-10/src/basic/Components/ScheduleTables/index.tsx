@@ -1,85 +1,42 @@
-import ScheduleTable from "@/basic/Components/ScheduleTables/ScheduleTable";
 import SearchDialog from "@/basic/Components/SearchDialog";
 import { useScheduleContext } from "@/basic/Contexts/ScheduleContext";
 import { SearchInfo } from "@/basic/types";
-import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
-import { useState } from "react";
+import { Flex } from "@chakra-ui/react";
+import { useCallback, useMemo, useState } from "react";
+import ScheduleTableContainer from "./ScheduleTableContainer";
 
 export const ScheduleTables = () => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
   const [searchInfo, setSearchInfo] = useState<SearchInfo | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-  const disabledRemoveButton = Object.keys(schedulesMap).length === 1;
+  const disabledRemoveButton = useMemo(
+    () => Object.keys(schedulesMap).length === 1,
+    [schedulesMap]
+  );
 
-  const duplicate = (targetId: string) => {
-    setSchedulesMap((prev) => ({
-      ...prev,
-      [`schedule-${Date.now()}`]: [...prev[targetId]],
-    }));
-  };
-
-  const remove = (targetId: string) => {
-    setSchedulesMap((prev) => {
-      delete prev[targetId];
-      return { ...prev };
-    });
-  };
+  const openDialog = useCallback(() => setIsDialogOpen(true), []);
+  const closeDialog = useCallback(() => setIsDialogOpen(false), []);
 
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
         {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
-          <Stack key={tableId} width="600px">
-            <Flex justifyContent="space-between" alignItems="center">
-              <Heading as="h3" fontSize="lg">
-                시간표 {index + 1}
-              </Heading>
-              <ButtonGroup size="sm" isAttached>
-                <Button
-                  colorScheme="green"
-                  onClick={() => setSearchInfo({ tableId })}
-                >
-                  시간표 추가
-                </Button>
-                <Button
-                  colorScheme="green"
-                  mx="1px"
-                  onClick={() => duplicate(tableId)}
-                >
-                  복제
-                </Button>
-                <Button
-                  colorScheme="green"
-                  isDisabled={disabledRemoveButton}
-                  onClick={() => remove(tableId)}
-                >
-                  삭제
-                </Button>
-              </ButtonGroup>
-            </Flex>
-            <ScheduleTable
-              key={`schedule-table-${index}`}
-              schedules={schedules}
-              tableId={tableId}
-              onScheduleTimeClick={(timeInfo) =>
-                setSearchInfo({ tableId, ...timeInfo })
-              }
-              onDeleteButtonClick={({ day, time }) =>
-                setSchedulesMap((prev) => ({
-                  ...prev,
-                  [tableId]: prev[tableId].filter(
-                    (schedule) =>
-                      schedule.day !== day || !schedule.range.includes(time)
-                  ),
-                }))
-              }
-            />
-          </Stack>
+          <ScheduleTableContainer
+            tableId={tableId}
+            schedules={schedules}
+            index={index}
+            disabledRemoveButton={disabledRemoveButton}
+            setSearchInfo={setSearchInfo}
+            setSchedulesMap={setSchedulesMap}
+            openDialog={openDialog}
+          />
         ))}
       </Flex>
       <SearchDialog
+        isOpen={isDialogOpen}
         searchInfo={searchInfo}
-        onClose={() => setSearchInfo(null)}
+        onClose={closeDialog}
       />
     </>
   );
