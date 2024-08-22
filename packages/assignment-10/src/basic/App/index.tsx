@@ -1,16 +1,13 @@
-import { ScheduleTables } from "@/basic/Components/ScheduleTables";
-import { ScheduleProvider } from "@/basic/Contexts/ScheduleContext";
-import ScheduleDndProvider from "@/basic/Contexts/ScheduleDndProvider";
+import { TimeTableProvider } from "@/basic/Providers/TimeTableProvider/TimeTableProvider";
 import { ChakraProvider } from "@chakra-ui/react";
+import ScheduleTables from "../Components/ScheduleTables";
 
 function App() {
   return (
     <ChakraProvider>
-      <ScheduleProvider>
-        <ScheduleDndProvider>
-          <ScheduleTables />
-        </ScheduleDndProvider>
-      </ScheduleProvider>
+      <TimeTableProvider>
+        <ScheduleTables />
+      </TimeTableProvider>
     </ChakraProvider>
   );
 }

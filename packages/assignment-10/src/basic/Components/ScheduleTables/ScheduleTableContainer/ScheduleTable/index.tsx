@@ -1,23 +1,26 @@
-import { Schedule, TimeInfo } from "@/basic/types";
+import { useScheduleContext } from "@/basic/Providers/ScheduleProvider/ScheduleContext";
+import { useTimeTableContext } from "@/basic/Providers/TimeTableProvider/TimeTableContext";
+import { TimeInfo } from "@/basic/types";
 import { Box } from "@chakra-ui/react";
 import { useDndContext } from "@dnd-kit/core";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo } from "react";
 import DraggableSchedule from "./DraggableSchedule";
 import ScheduleTableGrid from "./ScheduleTableGrid";
 
 interface Props {
   tableId: string;
-  schedules: Schedule[];
   onClickScheduleTime?: (timeInfo: TimeInfo) => void;
-  onDeleteButtonClick?: (timeInfo: TimeInfo) => void;
 }
 
-const ScheduleTable = ({
-  tableId,
-  schedules,
-  onClickScheduleTime,
-  onDeleteButtonClick,
-}: Props) => {
+const ScheduleTable = ({ tableId, onClickScheduleTime }: Props) => {
+  const {
+    appendAdditionalSchedule,
+    additionalSchedules,
+    resetAdditionalSchedules,
+    copySchedules,
+    resetCopySchedules,
+  } = useTimeTableContext();
+  const { schedules, updateSchedules } = useScheduleContext();
   const getColor = useCallback(
     (lectureId: string): string => {
       const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
@@ -37,6 +40,43 @@ const ScheduleTable = ({
     return null;
   }, [dndContext.active?.id]);
 
+  const onClickDeleteSchedule = useCallback(
+    ({ day, time }: TimeInfo) => {
+      updateSchedules(
+        schedules.filter(
+          (schedule) => schedule.day !== day || !schedule.range.includes(time)
+        )
+      );
+    },
+    [updateSchedules, schedules]
+  );
+
+  useEffect(() => {
+    if (!additionalSchedules) {
+      return;
+    }
+
+    if (additionalSchedules.tableId !== tableId) {
+      return;
+    }
+
+    updateSchedules([...schedules, ...additionalSchedules.schedules]);
+    resetAdditionalSchedules();
+  }, [additionalSchedules]);
+
+  useEffect(() => {
+    if (!copySchedules) {
+      return;
+    }
+
+    if (copySchedules.from !== tableId) {
+      return;
+    }
+
+    appendAdditionalSchedule(copySchedules.to, schedules);
+    resetCopySchedules();
+  }, [copySchedules]);
+
   return (
     <Box
       position="relative"
@@ -45,20 +85,22 @@ const ScheduleTable = ({
     >
       <ScheduleTableGrid onClickScheduleTime={onClickScheduleTime} />
 
-      {schedules.map((schedule, index) => (
-        <DraggableSchedule
-          key={`${schedule.lecture.title}-${index}`}
-          id={`${tableId}:${index}`}
-          data={schedule}
-          bg={getColor(schedule.lecture.id)}
-          onDeleteButtonClick={() =>
-            onDeleteButtonClick?.({
-              day: schedule.day,
-              time: schedule.range[0],
-            })
-          }
-        />
-      ))}
+      {!!schedules &&
+        schedules.length > 0 &&
+        schedules.map((schedule, index) => (
+          <DraggableSchedule
+            key={`${schedule.lecture.title}-${index}`}
+            id={`${tableId}:${index}`}
+            data={schedule}
+            bg={getColor(schedule.lecture.id)}
+            onDeleteButtonClick={() =>
+              onClickDeleteSchedule?.({
+                day: schedule.day,
+                time: schedule.range[0],
+              })
+            }
+          />
+        ))}
     </Box>
   );
 };

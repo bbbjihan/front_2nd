@@ -1,5 +1,5 @@
 import { fetchAllLectures } from "@/basic/apis";
-import { useScheduleContext } from "@/basic/Contexts/ScheduleContext";
+import { useTimeTableContext } from "@/basic/Providers/TimeTableProvider/TimeTableContext";
 import { Lecture, SearchInfo, SearchOption } from "@/basic/types";
 import { parseSchedule } from "@/basic/utils";
 import {
@@ -32,10 +32,6 @@ const PAGE_SIZE = 100;
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ isOpen, searchInfo, onClose }: Props) => {
-  console.count("rerender");
-
-  const { setSchedulesMap } = useScheduleContext();
-
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
@@ -106,7 +102,8 @@ const SearchDialog = ({ isOpen, searchInfo, onClose }: Props) => {
     []
   );
 
-  const addSchedule = useCallback(
+  const { appendAdditionalSchedule } = useTimeTableContext();
+  const addNewSchedule = useCallback(
     (lecture: Lecture) => {
       if (!searchInfo) return;
 
@@ -117,14 +114,11 @@ const SearchDialog = ({ isOpen, searchInfo, onClose }: Props) => {
         lecture,
       }));
 
-      setSchedulesMap((prev) => ({
-        ...prev,
-        [tableId]: [...prev[tableId], ...schedules],
-      }));
+      appendAdditionalSchedule(tableId, schedules);
 
       onClose();
     },
-    [searchInfo, onClose, setSchedulesMap]
+    [searchInfo, onClose]
   );
 
   useEffect(() => {
@@ -215,7 +209,7 @@ const SearchDialog = ({ isOpen, searchInfo, onClose }: Props) => {
             <Text align="right">검색결과: {filteredLectures.length}개</Text>
             <LectureTable
               visibleLectures={visibleLectures}
-              addSchedule={addSchedule}
+              addSchedule={addNewSchedule}
               loaderWrapperRef={loaderWrapperRef}
               loaderRef={loaderRef}
             />
